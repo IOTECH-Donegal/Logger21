@@ -18,13 +18,11 @@ from Utilities import log_file_name
 from ubx.UBXParser import UBXParser
 from ubx.Utilities import ubx_crc
 
-# utilities for NMEA tools
-from nmea.ths import ths
-from nmea.hdt import hdt
-from nmea.Utilities import udp_sender
+# Utilities ued by all NMEA tools
+from nmea.Utilities import validate_crc
 
 print('***** Sensor *****')
-print('Accepts UBX, NMEA, AIS, RTCM from a serial port and logs.')
+print('Accepts UBX, NMEA, (and eventually!) AIS, RTCM from a serial port and logs.')
 
 # Instantiate an object to parse UBX
 myUBX = UBXParser()
@@ -109,11 +107,15 @@ try:
         # Check for NMEA0183, leading with a $ symbol
         elif byte1 == b"\x24":
             nmea_full_bytes = Serial_Port1.readline()
-            nmea_full_string = nmea_full_bytes.decode("utf-8")
-            if nmea_logging:
-                output_file = open(nmea_log_file, 'a', newline='')
-                output_file.writelines('$' + nmea_full_string)
-            print(f'NMEA: Received {nmea_full_string[0:5]}')
+            # Convert to string, remove CR and LF and any whitespace
+            nmea_full_string = nmea_full_bytes.decode("utf-8").rstrip()
+            if validate_crc(nmea_full_string):
+                if nmea_logging:
+                    output_file = open(nmea_log_file, 'a', newline='')
+                    output_file.writelines('$' + nmea_full_string + "\r\n")
+                print(f'NMEA: Received {nmea_full_string[0:5]}')
+            else:
+                print('NMEA: Bad CRC')
 
         # Check for AIS, leading with a ! symbol
         elif byte1 == b"\x21":

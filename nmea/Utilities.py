@@ -11,15 +11,17 @@ def udp_sender(MCAST_GRP, MCAST_PORT, message):
 def validate_crc(nmea_full_sentence):
     """
     Compare a calculated CRC to the received value
+    Assumes $ has been pre-stripped
+    Assumes CR LF have been pre-stripped
     """
 
     try:
         # The last two characters are HH where HH is the CRC
-        checksum = nmea_full_sentence[-3:]
+        checksum = nmea_full_sentence[-2:]
         # XOR all values between $ and *
-        calculated_checksum = calculate_crc(nmea_full_sentence[1:-4])
-        # Compare the calculated checksum with the numerical value of the extracted string
-        if calculated_checksum == hex(int(checksum, 16)):
+        calculated_checksum = calculate_crc(nmea_full_sentence[0:-3])
+        # Compare the calculated checksum with the numerical value of the extracted string, upper case
+        if calculated_checksum == checksum.upper():
             return True
         else:
             return False

@@ -1,13 +1,7 @@
-# Unique UBX sentences
-import ubx.Sensors
-
 
 # Dictionaries of static data
 import ubx.ClassID as ubc
 import ubx.MessageID as ubm
-
-# List of sensor serial numbers and allocations
-from ubx.Sensors import UBLOX
 
 
 class UBXParser():
@@ -37,11 +31,21 @@ class UBXParser():
         # Check if a valid UBX class
         if byte3 in ubc.UBX_CLASS:
             self.sentence_class = ubc.UBX_CLASS[byte3]
-            if byte4 in ubm.UBX_NAV:
-                self.message_type = ubm.UBX_NAV[byte4]
-                print(f'UBX: Received {self.message_type}')
-            else:
-                print(f'UBX: Unknown Message {byte3} {byte4} {ubx_payload}')
+            if ubc.UBX_CLASS[byte3] == 'NAV':
+                # Check if a valid message
+                if byte4 in ubm.UBX_NAV:
+                    self.message_type = ubm.UBX_NAV[byte4]
+                    print(f'UBX: Received {self.message_type}')
+            if ubc.UBX_CLASS[byte3] == 'RXM':
+                # Check if a valid message
+                if byte4 in ubm.UBX_RXM:
+                    self.message_type = ubm.UBX_RXM[byte4]
+                    print(f'UBX: Received {self.message_type}')
+            if ubc.UBX_CLASS[byte3] == 'SEC':
+                # Check if a valid message
+                if byte4 in ubm.UBX_SEC:
+                    self.message_type = ubm.UBX_SEC[byte4]
+                    print(f'UBX: Received {self.message_type}')
         else:
             print(f'UBX: Unknown Class {byte3}')
 
